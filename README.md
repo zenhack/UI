@@ -86,5 +86,5 @@ An alternative OpenStack Dashboard to Horizon for the MOC.
   * OpenStack may be using the port, either runserver first, or specify port (ie. python manage.py runserver 9999)
 
 * How can I test the OpenStack python API effeciently??
-  * Look at UI/marketUI/auth.py. Use the defined keystone, glance and nova clients via python command line (first run 'source ~/devstack/openrc')
-
+  * Look at UI/moc_ui/auth.py. Use the defined keystone, glance and nova
+    clients via python command line (first run 'source ~/devstack/openrc')

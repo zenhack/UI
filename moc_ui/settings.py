@@ -1,5 +1,5 @@
 """
-Django settings for marketUI project.
+Django settings for moc_ui project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -23,8 +23,8 @@ SECRET_KEY = 'ok3ltp7a2!qc!43z)%eu8p_+7w88tc8r2dyu!@y^2tiv(+h)7m'
 DEBUG = True
 
 TEMPLATE_DEBUG = True
-TEMPLATE_DIRS = ( 
-	os.getcwd()+"/marketUI/templates",
+TEMPLATE_DIRS = (
+	os.getcwd()+"/moc_ui/templates",
 )
 
 # for request variables in templates
@@ -61,9 +61,9 @@ MIDDLEWARE_CLASSES = (
 SESSION_ENGINE = "django.contrib.sessions.backends.file"
 SESSION_FILE_PATH = os.getcwd() +"/session"
 
-ROOT_URLCONF = 'marketUI.urls'
+ROOT_URLCONF = 'moc_ui.urls'
 
-WSGI_APPLICATION = 'marketUI.wsgi.application'
+WSGI_APPLICATION = 'moc_ui.wsgi.application'
 
 
 # Database

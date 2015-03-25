@@ -12,6 +12,10 @@ PASSHASH_LEN = len(sha512_crypt.encrypt(''))
 UUID_LEN = len(str(uuid.uuid1()))
 DEFAULT_FIELD_LEN = 255
 
+# We're hardcoding these for now -- will clean up later.
+IMAGE_NAME = 'Cirros-0.3.3-x86_64'
+FLAVOR_NAME = 'm1.tiny'
+
 
 # user specifics
 class User(models.Model):
@@ -113,6 +117,16 @@ class OSProject(models.Model):
                                  self.name,
                                  self.cluster_account.cluster.auth_url)
 
+    def create_vm(self, name):
+        """Returns a newly created openstack vm with the given name.
+
+        This *does not* create a vm in the database.
+        """
+        nova = self.get_novaclient()
+        img = nova.images.find(name=IMAGE_NAME)
+        flavor = nova.flavors.find(name=FLAVOR_NAME)
+        return nova.servers.create(name, img, flavor)
+
 
 class VM(models.Model):
     """A user's vm."""
@@ -121,4 +135,9 @@ class VM(models.Model):
     os_uuid = models.CharField(max_length=UUID_LEN)
 
     def __unicode__(self):
-        return self.name
+        return '%r@%r' % (self.os_uuid, self.os_project.name)
+
+    def get(self):
+        """Get the openstack vm object via python-novaclient."""
+        nc = self.os_project.get_novaclient()
+        return nc.servers.get(self.os_uuid)

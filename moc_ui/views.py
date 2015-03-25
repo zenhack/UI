@@ -127,12 +127,12 @@ def dustVM(request):
             vm_name = form.cleaned_data['name']
             os_project_name = form.cleaned_data['os_project']
             os_project = models.OSProject.objects.get(name=os_project_name)
-            nova = os_project.get_novaclient()
-            image = nova.images.find(name="Cirros-0.3.3-x86_64")
-            flavor = nova.flavors.find(name="m1.tiny")
-            returnee = nova.servers.create(vm_name, image, flavor)
-            vm = models.VM(name=vm_name,
-                           user=user,
+            os_vm = os_project.create_vm(vm_name)
+            vm = models.VM(uuid=os_vm.to_dict()['id'],
+                           # TODO: We need to be able to check what our ui
+                           # project is, but for now we'll just pick the first
+                           # one.
+                           ui_project=user.uiproject_set[0],
                            os_project=os_project)
             vm.save()
             return HttpResponseRedirect('/clouds')
@@ -145,7 +145,7 @@ def dustVM(request):
             vm_name = form.cleaned_data['name']
             vm = models.VM.objects.get(name=vm_name, user=user)
             nova = vm.os_project.get_novaclient()
-            nova.servers.delete(
+            #nova.servers.delete(
             try:
 
                 if action == 'destroy' and 'pk' in vm:

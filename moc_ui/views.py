@@ -121,19 +121,33 @@ def dustVM(request):
 
         form = forms.createVM(request.POST)
         if form.is_valid():
+            if form.cleaned_data['action'] != 'create':
+                raise NotImplemented
             user = models.User.objects.get(name=request.session['username'])
             vm_name = form.cleaned_data['name']
-            action = form.cleaned_data['action']
-
-            if action == 'create':
-                vm = models.VM(name=vm_name, user=user)
-                vm.save()
-                return HttpResponseRedirect('/clouds')
+            os_project_name = form.cleaned_data['os_project']
+            os_project = models.OSProject.objects.get(name=os_project_name)
+            nova = os_project.get_novaclient()
+            image = nova.images.find(name="Cirros-0.3.3-x86_64")
+            flavor = nova.flavors.find(name="m1.tiny")
+            returnee = nova.servers.create(vm_name, image, flavor)
+            vm = models.VM(name=vm_name,
+                           user=user,
+                           os_project=os_project)
+            vm.save()
+            return HttpResponseRedirect('/clouds')
 
         form = forms.deleteVM(request.POST)
         if form.is_valid():
+            if form.cleaned_data['action'] != 'destroy':
+                raise NotImplemented
+            user = models.User.objects.get(name=request.session['username'])
+            vm_name = form.cleaned_data['name']
+            vm = models.VM.objects.get(name=vm_name, user=user)
+            nova = vm.os_project.get_novaclient()
+            nova.servers.delete(
             try:
-                vm = models.VM.objects.get(name=vm_name, user=user)
+
                 if action == 'destroy' and 'pk' in vm:
                     vm.delete()
             except:
@@ -145,17 +159,22 @@ def controlVM(request):
     if request.method == "POST":
         form = forms.control(request.POST)
         if form.is_valid():
-            user_name = request.session['username']
-            vm_name = form.cleaned_data['name']
+            user = models.User.objects.get(name=request.session['username'])
+            vm = models.UIProject.objects.get(name=form.cleaned_data['name'],
+                                              user=user)
             action = form.cleaned_data['action']
 
-            vm = models.UIProject.objects.get(name=vm_name, user=user_name)
+            if vm is None:
+                # error here
+                return HttpResponseRedirect('/clouds')
 
-            if action is 'power_on' and 'pk' not in vm:
-                pass
+            nova = vm.os_project.get_novaclient()
 
-            if action is 'power_off' and 'pk' in vm:
-                pass
+            if action is 'power_on':
+                nova.servers.start(vm.os_uuid)
+
+            if action is 'power_off':
+                nova.servers.stop(vm.os_uuid)
 
     return HttpResponseRedirect('/clouds')
 
